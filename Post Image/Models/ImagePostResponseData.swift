@@ -15,12 +15,15 @@ struct ImagePostResponseData {
     var timeInMilli: Double { timeInNano / 1_000_000 }
     
     var description: String {
-        return """
+        var description = """
 --------------------------------------
 Respond in \(String(format: "%.2f", timeInMilli)) milliseconds
 --------------------------------------
-\(response.debugDescription)
 """
+        if case .failure = response.result {
+            description += response.debugDescription
+        }
+        return description
     }
     
     var title: String {

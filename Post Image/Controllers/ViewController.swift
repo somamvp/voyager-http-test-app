@@ -19,14 +19,16 @@ class ViewController: UIViewController {
     var compressionQuality = 1.0
     var postResponses: [ImagePostResponseData] = []
     
-    let numTrial = 20
+    var numTrial = 20
     let fps = 10
     
     var timer: Timer?
     var timePassed = 0
 
     @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet weak var requestNumLabel: UILabel!
     @IBOutlet weak var compressionQualityLabel: UILabel!
+    @IBOutlet weak var sendButton: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,6 +59,11 @@ class ViewController: UIViewController {
         serverEndpoint = dictionary["image-post-endpoint"] as? String
 
     }
+    @IBAction func handleRequestNumSliderChanged(_ sender: UISlider) {
+        let value = Int(sender.value)
+        requestNumLabel.text = String(value)
+        numTrial = value
+    }
     @IBAction func handleCompressionQualitySliderChanged(_ sender: UISlider) {
         let value = round(sender.value * 10) / 10
         compressionQualityLabel.text = String(value)
@@ -75,31 +82,42 @@ class ViewController: UIViewController {
     }
     
     @IBAction func handleSendButton(_ sender: UIButton) {
+        imagePostTest(async: true)
+    }
+    
+    func imagePostTest(async: Bool) {
         if let imgData = imageView.image?.jpegData(compressionQuality: compressionQuality) {
             
-            self.view.makeToast("sending request. cp: \(String(format: "%.2f", compressionQuality))")
+            self.view.makeToast("sending \(numTrial) request. cp: \(String(format: "%.1f", compressionQuality))")
+            sendButton.isEnabled = false
             
-            sender.isEnabled = false
-            postResponses.removeAll()
-            timePassed = 0
-            let timeInterval = 1.0 / Double(fps)
-            timer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true, block: { timer in
+            if async {
+            
+                postResponses.removeAll()
+                timePassed = 0
+                let timeInterval = 1.0 / Double(fps)
+                timer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true, block: { timer in
+                    
+                    self.postImageData(filename: K.fileNames.postImageName, imgData: imgData, sequenceNo: self.timePassed)
+                    
+                    self.timePassed += 1
+                    if self.timePassed == self.numTrial {
+                        timer.invalidate()
+                        self.sendButton.isEnabled = true
+                        self.performSegue(withIdentifier: K.resultSegue, sender: self)
+                    }
+                })
                 
-                self.postImageData(filename: K.fileNames.postImageName, imgData: imgData, sequenceNo: self.timePassed)
-                
-                self.timePassed += 1
-                if self.timePassed == self.numTrial {
-                    timer.invalidate()
-                    sender.isEnabled = true
-                    self.performSegue(withIdentifier: K.resultSegue, sender: self)
-                }
-            })
+            } else {
+                postImageData(filename: K.fileNames.postImageName, imgData: imgData, sequenceNo: 1, async: false)
+            }
         } else {
             self.view.makeToast("img unable to convert into JPEG data!")
         }
+        
     }
     
-    func postImageData(filename: String, imgData: Data, sequenceNo: Int) {
+    func postImageData(filename: String, imgData: Data, sequenceNo: Int, async: Bool = true) {
         
         var info = mach_timebase_info(numer: 0, denom: 0)
         mach_timebase_info(&info)
@@ -126,6 +144,16 @@ class ViewController: UIViewController {
             
             let response = ImagePostResponseData(response: response, timeInNano: diff)
             self.postResponses.append(response)
+            
+            if !async {
+                if sequenceNo < self.numTrial {
+                    self.postImageData(filename: filename, imgData: imgData, sequenceNo: sequenceNo + 1, async: false)
+                } else {
+                    self.sendButton.isEnabled = true
+                    self.performSegue(withIdentifier: K.resultSegue, sender: self)
+                    return
+                }
+            }
         }
     }
     
