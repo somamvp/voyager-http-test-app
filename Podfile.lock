@@ -1,24 +1,32 @@
 PODS:
   - Alamofire (5.6.1)
+  - SocketRocket (0.6.0)
   - Starscream (4.0.4)
+  - StompClientLib (1.4.1):
+    - SocketRocket
   - Toast-Swift (5.0.1)
 
 DEPENDENCIES:
   - Alamofire
   - Starscream (~> 4.0.0)
+  - StompClientLib
   - Toast-Swift (~> 5.0.1)
 
 SPEC REPOS:
   trunk:
     - Alamofire
+    - SocketRocket
     - Starscream
+    - StompClientLib
     - Toast-Swift
 
 SPEC CHECKSUMS:
   Alamofire: 87bd8c952f9a4454320fce00d9cc3de57bcadaf5
+  SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
   Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
+  StompClientLib: ac40390e9660c574675f1c933bec81c8e2811a4f
   Toast-Swift: 9b6a70f28b3bf0b96c40d46c0c4b9d6639846711
 
-PODFILE CHECKSUM: 339e8d54339a3eba8539c5bc0d2860a88ded8e82
+PODFILE CHECKSUM: 89f03ee6fa344c73341275be385e246fecd3864b
 
 COCOAPODS: 1.11.3

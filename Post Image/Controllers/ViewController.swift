@@ -10,8 +10,9 @@ import Foundation
 import Alamofire
 import Toast_Swift
 import Starscream
+import StompClientLib
 
-class ViewController: UIViewController, WebSocketDelegate {
+class ViewController: UIViewController {
     
     var serverURI: String?
     var serverEndpoint: String?
@@ -26,8 +27,9 @@ class ViewController: UIViewController, WebSocketDelegate {
     var timer: Timer?
     var timePassed = 0
     
-    var socket: WebSocket!
-    var isConnected = false
+//    var socket: WebSocket!
+//    var isConnected = false
+    var socketClient: StompClientLib!
 
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var requestNumLabel: UILabel!
@@ -43,46 +45,49 @@ class ViewController: UIViewController, WebSocketDelegate {
     }
     
     func socketSetup() {
-        var request = URLRequest(url: URL(string: serverURI!)!)
-        request.timeoutInterval = 5
-        socket = WebSocket(request: request)
-        socket.delegate = self
-        socket.connect()
+        socketClient = StompClientLib()
+        let url = NSURL(string: serverURI!)!
+        socketClient.openSocketWithURLRequest(request: NSURLRequest(url: url as URL) , delegate: self)
+//        var request = URLRequest(url: URL(string: serverURI!)!)
+//        request.timeoutInterval = 5
+//        socket = WebSocket(request: request)
+//        socket.delegate = self
+//        socket.connect()
     }
     
-    func didReceive(event: WebSocketEvent, client: WebSocket) {
-        switch event {
-        case .connected(let headers):
-            isConnected = true
-            print("websocket is connected: \(headers)")
-        case .disconnected(let reason, let code):
-            isConnected = false
-            print("websocket is disconnected: \(reason) with code: \(code)")
-        case .text(let string):
-            print("Received text: \(string)")
-        case .binary(let data):
-            print("Received data: \(data.count)")
-        case .ping(_):
-            break
-        case .pong(_):
-            break
-        case .viabilityChanged(let viability):
-            print("viability changed to \(viability)")
-            
-            print("sending hello")
-            socket.write(string: "hello") {
-                print("hello sent!")
-            }
-            break
-        case .reconnectSuggested(_):
-            break
-        case .cancelled:
-            isConnected = false
-        case .error(let error):
-            isConnected = false
-            handleError(error)
-        }
-    }
+//    func didReceive(event: WebSocketEvent, client: WebSocket) {
+//        switch event {
+//        case .connected(let headers):
+//            isConnected = true
+//            print("websocket is connected: \(headers)")
+//        case .disconnected(let reason, let code):
+//            isConnected = false
+//            print("websocket is disconnected: \(reason) with code: \(code)")
+//        case .text(let string):
+//            print("Received text: \(string)")
+//        case .binary(let data):
+//            print("Received data: \(data.count)")
+//        case .ping(_):
+//            break
+//        case .pong(_):
+//            break
+//        case .viabilityChanged(let viability):
+//            print("viability changed to \(viability)")
+//
+//            print("sending hello")
+//            socket.write(string: "hello") {
+//                print("hello sent!")
+//            }
+//            break
+//        case .reconnectSuggested(_):
+//            break
+//        case .cancelled:
+//            isConnected = false
+//        case .error(let error):
+//            isConnected = false
+//            handleError(error)
+//        }
+//    }
     
     
     func handleError(_ error: Error?) {
@@ -158,9 +163,7 @@ class ViewController: UIViewController, WebSocketDelegate {
     
     func imageEmitTest(imgData: Data) {
         print("sending hello")
-        socket.write(string: "hello") {
-            print("hello sent!")
-        }
+        socketClient.sendMessage(message: "hello!", toDestination: "/\(serverEndpoint!)", withHeaders: nil, withReceipt: nil)
     }
     
     
@@ -413,5 +416,37 @@ extension ViewController : UIImagePickerControllerDelegate, UINavigationControll
         picker.dismiss(animated: true, completion: nil)
     }
     
+}
+
+extension ViewController: StompClientLibDelegate {
+    
+    func stompClient(client: StompClientLib!, didReceiveMessageWithJSONBody jsonBody: AnyObject?, akaStringBody stringBody: String?, withHeader header: [String : String]?, withDestination destination: String) {
+        print("Destination : \(destination)")
+        print("JSON Body : \(String(describing: jsonBody))")
+        print("String Body : \(stringBody ?? "nil")")
+    }
+    
+    func stompClientDidConnect(client: StompClientLib!) {
+        print("Socket is connected")
+        // Stomp subscribe will be here!
+        socketClient.subscribe(destination: "/\(serverEndpoint!)")
+        // Note : topic needs to be a String object
+    }
+    
+    func stompClientDidDisconnect(client: StompClientLib!) {
+        print("Socket is Disconnected")
+    }
+    
+    func serverDidSendReceipt(client: StompClientLib!, withReceiptId receiptId: String) {
+        print("Receipt : \(receiptId)")
+    }
+
+    func serverDidSendError(client: StompClientLib!, withErrorMessage description: String, detailedErrorMessage message: String?) {
+        print("Error Send : \(String(describing: message))")
+    }
+    
+    func serverDidSendPing() {
+        print("Server ping")
+    }
 }
 
