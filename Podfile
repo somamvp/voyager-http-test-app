@@ -8,7 +8,7 @@ target 'Post Image' do
   # Pods for Post Image
   pod 'Alamofire'
   pod 'Toast-Swift', '~> 5.0.1'
-  pod 'Socket.IO-Client-Swift', '~> 15.2.0'
+  # pod 'Socket.IO-Client-Swift', '~> 15.2.0'
   pod 'Starscream', '~> 4.0.0'
 
 

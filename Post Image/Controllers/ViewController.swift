@@ -9,10 +9,9 @@ import UIKit
 import Foundation
 import Alamofire
 import Toast_Swift
-import SocketIO
 import Starscream
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, WebSocketDelegate {
     
     var serverURI: String?
     var serverEndpoint: String?
@@ -27,8 +26,8 @@ class ViewController: UIViewController {
     var timer: Timer?
     var timePassed = 0
     
-    var manager: SocketManager!
-    var socket: SocketIOClient!
+    var socket: WebSocket!
+    var isConnected = false
 
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var requestNumLabel: UILabel!
@@ -44,55 +43,58 @@ class ViewController: UIViewController {
     }
     
     func socketSetup() {
-//        var request = URLRequest(url: URL(string: serverURI!)!)
-//        request.timeoutInterval = 5
-//        socket = WebSocket(request: request)
-//        socket.delegate = self
-//        socket.connect()
-        print("init manager")
-        manager = SocketManager(socketURL: URL(string: serverURI!)!, config: [.log(true), .compress])
-        print("init socket")
-        socket = manager.defaultSocket
-        print("add handler")
-        addHandlers()
-        print("attempt to connect")
+        var request = URLRequest(url: URL(string: serverURI!)!)
+        request.timeoutInterval = 5
+        socket = WebSocket(request: request)
+        socket.delegate = self
         socket.connect()
     }
     
-    func addHandlers() {
-        socket.on(serverEndpoint!) { data, ack in
-            print(data)
-            return
+    func didReceive(event: WebSocketEvent, client: WebSocket) {
+        switch event {
+        case .connected(let headers):
+            isConnected = true
+            print("websocket is connected: \(headers)")
+        case .disconnected(let reason, let code):
+            isConnected = false
+            print("websocket is disconnected: \(reason) with code: \(code)")
+        case .text(let string):
+            print("Received text: \(string)")
+        case .binary(let data):
+            print("Received data: \(data.count)")
+        case .ping(_):
+            break
+        case .pong(_):
+            break
+        case .viabilityChanged(let viability):
+            print("viability changed to \(viability)")
+            
+            print("sending hello")
+            socket.write(string: "hello") {
+                print("hello sent!")
+            }
+            break
+        case .reconnectSuggested(_):
+            break
+        case .cancelled:
+            isConnected = false
+        case .error(let error):
+            isConnected = false
+            handleError(error)
         }
     }
-//
-//    func didReceive(event: WebSocketEvent, client: WebSocket) {
-//        switch event {
-//        case .connected(let headers):
-//            isConnected = true
-//            print("websocket is connected: \(headers)")
-//        case .disconnected(let reason, let code):
-//            isConnected = false
-//            print("websocket is disconnected: \(reason) with code: \(code)")
-//        case .text(let string):
-//            print("Received text: \(string)")
-//        case .binary(let data):
-//            print("Received data: \(data.count)")
-//        case .ping(_):
-//            break
-//        case .pong(_):
-//            break
-//        case .viabilityChanged(_):
-//            break
-//        case .reconnectSuggested(_):
-//            break
-//        case .cancelled:
-//            isConnected = false
-//        case .error(let error):
-//            isConnected = false
-//            handleError(error)
-//        }
-//    }
+    
+    
+    func handleError(_ error: Error?) {
+        if let e = error as? WSError {
+            print("websocket encountered an error: \(e.message)")
+        } else if let e = error {
+            print("websocket encountered an error: \(e.localizedDescription)")
+        } else {
+            print("websocket encountered an error")
+        }
+    }
+    
     
     func loadSecrets() {
         guard let url = Bundle.main.url(forResource: "secrets", withExtension: "plist"),
@@ -150,22 +152,17 @@ class ViewController: UIViewController {
         }
     }
     @IBAction func handleSendSocketButton(_ sender: UIButton) {
-
-        if let imgData = imageView.image?.jpegData(compressionQuality: compressionQuality) {
-            emitImageData(imgData: imgData, sequenceNo: 1)
-        } else {
-            self.view.makeToast("img unable to convert into JPEG data!")
-        }
-    }
-    
-    func imageEmitTest(imgData: Data) {
+        imageEmitTest(imgData: Data())
         
     }
     
-    func emitImageData(imgData: Data, sequenceNo: Int) {
-        socket.emit(serverEndpoint!, imgData)
-        print("emit called")
+    func imageEmitTest(imgData: Data) {
+        print("sending hello")
+        socket.write(string: "hello") {
+            print("hello sent!")
+        }
     }
+    
     
     func imagePostTest(imgData: Data, async: Bool) {
         postResponses = []
