@@ -8,6 +8,7 @@ PODS:
 DEPENDENCIES:
   - Alamofire
   - Socket.IO-Client-Swift (~> 15.2.0)
+  - Starscream (~> 3.1.1)
   - Toast-Swift (~> 5.0.1)
 
 SPEC REPOS:
@@ -23,6 +24,6 @@ SPEC CHECKSUMS:
   Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
   Toast-Swift: 9b6a70f28b3bf0b96c40d46c0c4b9d6639846711
 
-PODFILE CHECKSUM: eb6d11964f3dd7db52af10bd882c1e873afa303f
+PODFILE CHECKSUM: 0d98dd5616932119d37544a060394d25625042db
 
 COCOAPODS: 1.11.3

@@ -9,6 +9,8 @@ import UIKit
 import Foundation
 import Alamofire
 import Toast_Swift
+import SocketIO
+import Starscream
 
 class ViewController: UIViewController {
     
@@ -21,9 +23,12 @@ class ViewController: UIViewController {
     
     var numTrial = 20
     let fps = 10
-    
+
     var timer: Timer?
     var timePassed = 0
+    
+    var manager: SocketManager!
+    var socket: SocketIOClient!
 
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var requestNumLabel: UILabel!
@@ -34,12 +39,77 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         loadSecrets()
+        loadDefaultImage()
+        socketSetup()
+    }
+    
+    func socketSetup() {
+//        var request = URLRequest(url: URL(string: serverURI!)!)
+//        request.timeoutInterval = 5
+//        socket = WebSocket(request: request)
+//        socket.delegate = self
+//        socket.connect()
+        print("init manager")
+        manager = SocketManager(socketURL: URL(string: serverURI!)!, config: [.log(true), .compress])
+        print("init socket")
+        socket = manager.defaultSocket
+        print("add handler")
+        addHandlers()
+        print("attempt to connect")
+        socket.connect()
+    }
+    
+    func addHandlers() {
+        socket.on(serverEndpoint!) { data, ack in
+            print(data)
+            return
+        }
+    }
+//
+//    func didReceive(event: WebSocketEvent, client: WebSocket) {
+//        switch event {
+//        case .connected(let headers):
+//            isConnected = true
+//            print("websocket is connected: \(headers)")
+//        case .disconnected(let reason, let code):
+//            isConnected = false
+//            print("websocket is disconnected: \(reason) with code: \(code)")
+//        case .text(let string):
+//            print("Received text: \(string)")
+//        case .binary(let data):
+//            print("Received data: \(data.count)")
+//        case .ping(_):
+//            break
+//        case .pong(_):
+//            break
+//        case .viabilityChanged(_):
+//            break
+//        case .reconnectSuggested(_):
+//            break
+//        case .cancelled:
+//            isConnected = false
+//        case .error(let error):
+//            isConnected = false
+//            handleError(error)
+//        }
+//    }
+    
+    func loadSecrets() {
+        guard let url = Bundle.main.url(forResource: "secrets", withExtension: "plist"),
+              let dictionary = NSDictionary(contentsOf: url) else {
+            return
+        }
+        // read
+        serverURI = dictionary["server-uri"] as? String
+        serverEndpoint = dictionary["image-post-endpoint"] as? String
+        
         if let safeServerURI = serverURI {
             print("server uri loaded : \(safeServerURI)")
         } else {
             print("server uri not loaded")
         }
-        
+    }
+    func loadDefaultImage() {
         if let bundlePath = Bundle.main.path(forResource: K.fileNames.bundleImageName, ofType: "jpeg"),
             let image = UIImage(contentsOfFile: bundlePath) {
             imageView.image = image
@@ -48,17 +118,6 @@ class ViewController: UIViewController {
         }
     }
     
-    func loadSecrets() {
-        guard let url = Bundle.main.url(forResource: "secrets", withExtension: "plist"),
-              let dictionary = NSDictionary(contentsOf: url) else {
-            return
-        }
-
-        // read
-        serverURI = dictionary["server-uri"] as? String
-        serverEndpoint = dictionary["image-post-endpoint"] as? String
-
-    }
     @IBAction func handleRequestNumSliderChanged(_ sender: UISlider) {
         let value = Int(sender.value)
         requestNumLabel.text = String(value)
@@ -69,7 +128,6 @@ class ViewController: UIViewController {
         compressionQualityLabel.text = String(value)
         compressionQuality = Double(value)
     }
-    
     @IBAction func handleChangeButton(_ sender: UIButton) {
         print("Image Selected")
                 
@@ -82,37 +140,54 @@ class ViewController: UIViewController {
     }
     
     @IBAction func handleSendButton(_ sender: UIButton) {
-        imagePostTest(async: true)
-    }
-    
-    func imagePostTest(async: Bool) {
+        
         if let imgData = imageView.image?.jpegData(compressionQuality: compressionQuality) {
-            
             self.view.makeToast("sending \(numTrial) request. cp: \(String(format: "%.1f", compressionQuality))")
             sendButton.isEnabled = false
-            
-            if async {
-            
-                postResponses.removeAll()
-                timePassed = 0
-                let timeInterval = 1.0 / Double(fps)
-                timer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true, block: { timer in
-                    
-                    self.postImageData(filename: K.fileNames.postImageName, imgData: imgData, sequenceNo: self.timePassed)
-                    
-                    self.timePassed += 1
-                    if self.timePassed == self.numTrial {
-                        timer.invalidate()
-                        self.sendButton.isEnabled = true
-                        self.performSegue(withIdentifier: K.resultSegue, sender: self)
-                    }
-                })
-                
-            } else {
-                postImageData(filename: K.fileNames.postImageName, imgData: imgData, sequenceNo: 1, async: false)
-            }
+            imagePostTest(imgData: imgData, async: true)
         } else {
             self.view.makeToast("img unable to convert into JPEG data!")
+        }
+    }
+    @IBAction func handleSendSocketButton(_ sender: UIButton) {
+
+        if let imgData = imageView.image?.jpegData(compressionQuality: compressionQuality) {
+            emitImageData(imgData: imgData, sequenceNo: 1)
+        } else {
+            self.view.makeToast("img unable to convert into JPEG data!")
+        }
+    }
+    
+    func imageEmitTest(imgData: Data) {
+        
+    }
+    
+    func emitImageData(imgData: Data, sequenceNo: Int) {
+        socket.emit(serverEndpoint!, imgData)
+        print("emit called")
+    }
+    
+    func imagePostTest(imgData: Data, async: Bool) {
+        postResponses = []
+        timePassed = 0
+        
+        if async {
+            let timeInterval = 1.0 / Double(fps)
+            timer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { timer in
+                
+                self.postImageData(filename: K.fileNames.postImageName, imgData: imgData, sequenceNo: self.timePassed)
+                
+                // increment count & terminate when done counting
+                self.timePassed += 1
+                if self.timePassed == self.numTrial {
+                    timer.invalidate()
+                    self.sendButton.isEnabled = true
+                    self.performSegue(withIdentifier: K.resultSegue, sender: self)
+                }
+            }
+            
+        } else {
+            postImageData(filename: K.fileNames.postImageName, imgData: imgData, sequenceNo: 1, async: false)
         }
         
     }
