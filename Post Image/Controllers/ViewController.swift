@@ -9,7 +9,6 @@ import UIKit
 import Foundation
 import Alamofire
 import Toast_Swift
-import Starscream
 import StompClientLib
 
 class ViewController: UIViewController {
@@ -27,9 +26,8 @@ class ViewController: UIViewController {
     var timer: Timer?
     var timePassed = 0
     
-//    var socket: WebSocket!
-//    var isConnected = false
     var socketClient: StompClientLib!
+    var url: URL!
 
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var requestNumLabel: UILabel!
@@ -45,61 +43,12 @@ class ViewController: UIViewController {
     }
     
     func socketSetup() {
+        url = URL(string: serverURI!)?.appendingPathComponent(serverEndpoint!)
+        print("url constructed: \(url!)")
+        
         socketClient = StompClientLib()
-        let url = NSURL(string: serverURI!)!
-        socketClient.openSocketWithURLRequest(request: NSURLRequest(url: url as URL) , delegate: self)
-//        var request = URLRequest(url: URL(string: serverURI!)!)
-//        request.timeoutInterval = 5
-//        socket = WebSocket(request: request)
-//        socket.delegate = self
-//        socket.connect()
+        socketClient.openSocketWithURLRequest(request: NSURLRequest(url: url) , delegate: self)
     }
-    
-//    func didReceive(event: WebSocketEvent, client: WebSocket) {
-//        switch event {
-//        case .connected(let headers):
-//            isConnected = true
-//            print("websocket is connected: \(headers)")
-//        case .disconnected(let reason, let code):
-//            isConnected = false
-//            print("websocket is disconnected: \(reason) with code: \(code)")
-//        case .text(let string):
-//            print("Received text: \(string)")
-//        case .binary(let data):
-//            print("Received data: \(data.count)")
-//        case .ping(_):
-//            break
-//        case .pong(_):
-//            break
-//        case .viabilityChanged(let viability):
-//            print("viability changed to \(viability)")
-//
-//            print("sending hello")
-//            socket.write(string: "hello") {
-//                print("hello sent!")
-//            }
-//            break
-//        case .reconnectSuggested(_):
-//            break
-//        case .cancelled:
-//            isConnected = false
-//        case .error(let error):
-//            isConnected = false
-//            handleError(error)
-//        }
-//    }
-    
-    
-    func handleError(_ error: Error?) {
-        if let e = error as? WSError {
-            print("websocket encountered an error: \(e.message)")
-        } else if let e = error {
-            print("websocket encountered an error: \(e.localizedDescription)")
-        } else {
-            print("websocket encountered an error")
-        }
-    }
-    
     
     func loadSecrets() {
         guard let url = Bundle.main.url(forResource: "secrets", withExtension: "plist"),
@@ -163,7 +112,7 @@ class ViewController: UIViewController {
     
     func imageEmitTest(imgData: Data) {
         print("sending hello")
-        socketClient.sendMessage(message: "hello!", toDestination: "/\(serverEndpoint!)", withHeaders: nil, withReceipt: nil)
+        socketClient.sendMessage(message: "hello!", toDestination: "/pub/upload", withHeaders: nil, withReceipt: nil)
     }
     
     
@@ -239,163 +188,6 @@ class ViewController: UIViewController {
         }
     }
     
-// MARK: - deprecated AF calls
-    
-    func requestIdentify(userName: String,
-                             imgData: Data) {
-
-//            var urlComponent = URLComponents(string: BaseAPI.shared.getBaseString())
-//            urlComponent?.path = RequestURL.identify.getRequestURL
-//            guard let url = urlComponent?.url else {
-//                return
-//            }
-        let url = "[Server URI]"
-    
-//        let header: HTTPHeaders = [
-//            "Content-Type": "multipart/form-data"
-//        ]
-        let parameters = [
-            "filename":userName,
-            "sequenceNo": "0506"
-        ]
-        
-
-
-        _ = AF.upload(multipartFormData: { multipartFormData in
-            for (key, value) in parameters {
-                multipartFormData.append("\(value)".data(using: .utf8)!, withName: key, mimeType: "text/plain")
-            }
-
-            multipartFormData.append(imgData, withName: "img", fileName: "\(userName).jpg", mimeType: "image/jpg")
-
-        }, to: url).responseDecodable(of: ImagePostResponseRawData.self) { response in
-            switch response.result {
-            case .success(let upload):
-                print(upload)
-//                        guard let httpStatusCode
-//                            = HttpStatusCode(rawValue: decodedData.statusCode) else {
-//                            print("status error")
-////                                completion(.failed(NSError(domain: "status error",
-////                                                           code: 0,
-////                                                           userInfo: nil)))
-//                                return
-//                        }
-//                        completion(.success(httpStatusCode))
-//                        print(decodedData.statusCode)
-
-//                    } else {
-//                        completion(.failed(NSError(domain: "decode error",
-//                                                   code: 0,
-//                                                   userInfo: nil)))
-//                        print("decode error")
-//                        return
-//                    }
-//                }
-            case .failure(let err):
-//                completion(.failed(err))
-                print(err)
-            }
-            
-        }
-    }
-    
-    /*
-    func requestIdentify() {
-        guard let sendData = imgObservable.value else {
-            return
-        }
-        let boundary = generateBoundaryString()
-        let body: [String: String] = ["userName": userName]
-        let bodyData = createBody(parameters: body,
-                                  boundary: boundary,
-                                  data: sendData,
-                                  mimeType: "image/jpg",
-                                  filename: "identifyImage.jpg")
-
-        requestIdentifys(boundary: boundary, bodyData: bodyData) { response in
-            switch response {
-            case .success(let statusCode):
-                print(statusCode)
-            case .failed(let err):
-                print(err)
-            }
-        }
-    }
-    
-    private func generateBoundaryString() -> String {
-        return "Boundary-\(UUID().uuidString)"
-    }
-    
-    private func createBody(parameters: [String: String],
-                            boundary: String,
-                            data: Data,
-                            mimeType: String,
-                            filename: String) -> Data {
-        var body = Data()
-        let imgDataKey = "img"
-        let boundaryPrefix = "--\(boundary)\r\n"
-        
-        for (key, value) in parameters {
-            body.append(boundaryPrefix.data(using: .utf8)!)
-            body.append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n".data(using: .utf8)!)
-            body.append("\(value)\r\n".data(using: .utf8)!)
-        }
-        
-        body.append(boundaryPrefix.data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"\(imgDataKey)\"; filename=\"\(filename)\"\r\n".data(using: .utf8)!)
-        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
-        body.append(data)
-        body.append("\r\n".data(using: .utf8)!)
-        body.append("--".appending(boundary.appending("--")).data(using: .utf8)!)
-        
-        return body as Data
-    }
-    
-    
-    
-    func requestIdentifys(boundary: String,
-                         bodyData: Data,
-                         completion: @escaping (DataResponse<HttpStatusCode>) -> Void) {
-        var urlComponent = URLComponents(string: BaseAPI.shared.getBaseString())
-        urlComponent?.path = RequestURL.identify.getRequestURL
-        let header: [String: String] = [
-            "Content-Type": "multipart/form-data; boundary=\(boundary)"
-        ]
-        guard let url = urlComponent?.url,
-            let request = requestMaker.makeRequest(url: url,
-                                                   method: .post,
-                                                   header: header,
-                                                   body: bodyData) else {
-                                                    return
-                                                    
-        }
-        
-        network.dispatch(request: request) { result in
-            switch result {
-            case .success(let data):
-                
-                if let decodedData = try? JSONDecoder().decode(ResponseSimple<String>.self,
-                                                               from: data) {
-                    print(decodedData)
-                    guard let httpStatusCode = HttpStatusCode(rawValue: decodedData.statusCode) else {
-                        return completion(.failed(NSError(domain: "status error",
-                                                          code: 0,
-                                                          userInfo: nil)))
-                    }
-                    completion(.success(httpStatusCode))
-                } else {
-                    completion(.failed(NSError(domain: "decode error",
-                                               code: 0,
-                                               userInfo: nil)))
-                    return
-                }
-                
-            case .failure(let error):
-                completion(.failed(error))
-                return
-            }
-        }
-    } */
 }
 
 // MARK: - image picker
@@ -418,6 +210,8 @@ extension ViewController : UIImagePickerControllerDelegate, UINavigationControll
     
 }
 
+// MARK: - STOMP client delegate
+
 extension ViewController: StompClientLibDelegate {
     
     func stompClient(client: StompClientLib!, didReceiveMessageWithJSONBody jsonBody: AnyObject?, akaStringBody stringBody: String?, withHeader header: [String : String]?, withDestination destination: String) {
@@ -428,9 +222,9 @@ extension ViewController: StompClientLibDelegate {
     
     func stompClientDidConnect(client: StompClientLib!) {
         print("Socket is connected")
+        
         // Stomp subscribe will be here!
-        socketClient.subscribe(destination: "/\(serverEndpoint!)")
-        // Note : topic needs to be a String object
+        socketClient.subscribe(destination: "/sub/img")
     }
     
     func stompClientDidDisconnect(client: StompClientLib!) {
