@@ -10,7 +10,7 @@ import Alamofire
 
 struct ImagePostResponseData {
     
-    let response: AFDataResponse<ImagePostResponseRawData>
+    let response: AFDataResponse<ImagePostResponseRawData>?
     let timeInNano: Double
     var timeInMilli: Double { timeInNano / 1_000_000 }
     
@@ -20,17 +20,17 @@ struct ImagePostResponseData {
 Respond in \(String(format: "%.2f", timeInMilli)) milliseconds
 --------------------------------------
 """
-        if case .failure = response.result {
+        if case .failure = response?.result {
             description += response.debugDescription
         }
         return description
     }
     
     var title: String {
-        switch response.result {
+        switch response?.result {
             case .success:
                 return "Success"
-            case .failure:
+            default:
                 return "Failure"
         }
     }

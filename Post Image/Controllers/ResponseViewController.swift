@@ -27,6 +27,7 @@ class ResponseViewController: UIViewController {
             partialResult + response.description + "\n"
         }
         UIPasteboard.general.string = contentLabel.text
+        self.view.makeToast("log saved in clipboard!")
     }
     
     @IBAction func handleDismissButton(_ sender: UIButton) {

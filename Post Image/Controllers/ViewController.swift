@@ -28,6 +28,10 @@ class ViewController: UIViewController {
     
     var socketClient: StompClientLib!
     var url: URL!
+    
+    var imgData = Data()
+    var timebaseInfo = mach_timebase_info(numer: 0, denom: 0)
+    var tick: UInt64 = 0
 
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var requestNumLabel: UILabel!
@@ -107,20 +111,41 @@ class ViewController: UIViewController {
     }
     @IBAction func handleSendSocketButton(_ sender: UIButton) {
         if let imgData = imageView.image?.jpegData(compressionQuality: compressionQuality) {
-            imageEmitTest(imgData: imgData)
+            self.view.makeToast("sending \(numTrial) request via STOMP. cp: \(String(format: "%.1f", compressionQuality))")
+            sendButton.isEnabled = false
+            imageEmitTest(imgData: imgData, async: false)
         } else {
             self.view.makeToast("img unable to convert into JPEG data!")
         }
         
     }
     
-    func imageEmitTest(imgData: Data) {
-        print("sending hello & image")
-        socketClient.sendMessage(message: String(imgData.base64EncodedString()), toDestination: "/pub/upload", withHeaders: nil, withReceipt: nil)
-//        socketClient.sendMessage(message: Data("hello".utf8).base64EncodedString(), toDestination: "/pub/upload", withHeaders: nil, withReceipt: nil)
-//        print(String(imgData.base64EncodedString().count))
-//        let data = NSDictionary(dictionary: ["image": String(imgData.base64EncodedString().prefix(10000))])
-//        socketClient.sendJSONForDict(dict: data, toDestination: "/pub/upload")
+    func imageEmitTest(imgData: Data, async: Bool) {
+        if async {
+            return
+        } else {
+            postResponses = []
+            self.imgData = imgData
+            sendImageDataStomp(imgData: imgData, async: false)
+        }
+    }
+    
+    func sendImageDataStomp(imgData: Data, async: Bool) {
+        
+        let imgStr = String(imgData.base64EncodedString())
+        timebaseInfo = mach_timebase_info(numer: 0, denom: 0)
+        mach_timebase_info(&timebaseInfo)
+        tick = mach_absolute_time()
+        
+        if !async {
+            if postResponses.count < numTrial {
+                socketClient.sendMessage(message: imgStr, toDestination: "/pub/upload", withHeaders: nil, withReceipt: nil)
+            } else {
+                sendButton.isEnabled = true
+                performSegue(withIdentifier: K.resultSegue, sender: self)
+                return
+            }
+        }
     }
     
     
@@ -223,9 +248,18 @@ extension ViewController : UIImagePickerControllerDelegate, UINavigationControll
 extension ViewController: StompClientLibDelegate {
     
     func stompClient(client: StompClientLib!, didReceiveMessageWithJSONBody jsonBody: AnyObject?, akaStringBody stringBody: String?, withHeader header: [String : String]?, withDestination destination: String) {
-        print("Destination : \(destination)")
-        print("JSON Body : \(String(describing: jsonBody))")
-        print("String Body : \(stringBody ?? "nil")")
+//        print("Destination : \(destination)")
+//        print("JSON Body : \(String(describing: jsonBody))")
+//        print("String Body : \(stringBody ?? "nil")")
+        
+    
+        let diff = Double(mach_absolute_time() - tick) * Double(timebaseInfo.numer) / Double(timebaseInfo.denom)
+        print("\(diff / 1_000_000) milliseconds")
+        
+        let response = ImagePostResponseData(response: nil, timeInNano: diff)
+        self.postResponses.append(response)
+        
+        sendImageDataStomp(imgData: imgData, async: false)
     }
     
     func stompClientDidConnect(client: StompClientLib!) {
