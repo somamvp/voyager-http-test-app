@@ -29,14 +29,19 @@ class ViewController: UIViewController {
     var socketClient: StompClientLib!
     var url: URL!
     
+    var async = false
     var imgData = Data()
     var timebaseInfo = mach_timebase_info(numer: 0, denom: 0)
     var tick: UInt64 = 0
+    var stompRequestTimestamps = [UInt64]()
+    var stompResponseTimestamps = [UInt64]()
 
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var requestNumLabel: UILabel!
     @IBOutlet weak var compressionQualityLabel: UILabel!
+    @IBOutlet weak var asyncSwitch: UISwitch!
     @IBOutlet weak var sendButton: UIButton!
+    @IBOutlet weak var socketSendButton: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,7 +52,7 @@ class ViewController: UIViewController {
     }
     
     func socketSetup() {
-        url = URL(string: serverURI!)?.appendingPathComponent(serverEndpoint!)
+        url = URL(string: serverURI!)?.appendingPathComponent(serverEndpoint!).appendingPathComponent("websocket")
         print("url constructed: \(url!)")
         
         socketClient = StompClientLib()
@@ -103,8 +108,8 @@ class ViewController: UIViewController {
         
         if let imgData = imageView.image?.jpegData(compressionQuality: compressionQuality) {
             self.view.makeToast("sending \(numTrial) request. cp: \(String(format: "%.1f", compressionQuality))")
-            sendButton.isEnabled = false
-            imagePostTest(imgData: imgData, async: true)
+            disableSendButtons()
+            imagePostTest(imgData: imgData, async: asyncSwitch.isOn)
         } else {
             self.view.makeToast("img unable to convert into JPEG data!")
         }
@@ -112,8 +117,8 @@ class ViewController: UIViewController {
     @IBAction func handleSendSocketButton(_ sender: UIButton) {
         if let imgData = imageView.image?.jpegData(compressionQuality: compressionQuality) {
             self.view.makeToast("sending \(numTrial) request via STOMP. cp: \(String(format: "%.1f", compressionQuality))")
-            sendButton.isEnabled = false
-            imageEmitTest(imgData: imgData, async: false)
+            disableSendButtons()
+            imageEmitTest(imgData: imgData, async: asyncSwitch.isOn)
         } else {
             self.view.makeToast("img unable to convert into JPEG data!")
         }
@@ -121,11 +126,33 @@ class ViewController: UIViewController {
     }
     
     func imageEmitTest(imgData: Data, async: Bool) {
+        self.async = async
+        self.imgData = imgData
+        postResponses = []
+        stompRequestTimestamps = []
+        stompResponseTimestamps = []
+        timePassed = 0
+        
+        timebaseInfo = mach_timebase_info(numer: 0, denom: 0)
+        mach_timebase_info(&timebaseInfo)
+        
         if async {
-            return
+            
+            
+            let timeInterval = 1.0 / Double(fps)
+            timer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true) { timer in
+                
+                self.sendImageDataStomp(imgData: imgData, async: true)
+                
+                // increment count & terminate when done counting
+                self.timePassed += 1
+                if self.timePassed == self.numTrial {
+                    timer.invalidate()
+                    self.showResult()
+                }
+            }
+            
         } else {
-            postResponses = []
-            self.imgData = imgData
             sendImageDataStomp(imgData: imgData, async: false)
         }
     }
@@ -133,17 +160,17 @@ class ViewController: UIViewController {
     func sendImageDataStomp(imgData: Data, async: Bool) {
         
         let imgStr = String(imgData.base64EncodedString())
-        timebaseInfo = mach_timebase_info(numer: 0, denom: 0)
-        mach_timebase_info(&timebaseInfo)
         tick = mach_absolute_time()
+        stompRequestTimestamps.append(tick)
         
-        if !async {
+        if async {
+            print("req sent")
+            socketClient.sendMessage(message: String(imgData.base64EncodedString()), toDestination: "/pub/upload", withHeaders: nil, withReceipt: nil)
+        } else {
             if postResponses.count < numTrial {
                 socketClient.sendMessage(message: imgStr, toDestination: "/pub/upload", withHeaders: nil, withReceipt: nil)
             } else {
-                sendButton.isEnabled = true
-                performSegue(withIdentifier: K.resultSegue, sender: self)
-                return
+                self.showResult()
             }
         }
     }
@@ -163,8 +190,7 @@ class ViewController: UIViewController {
                 self.timePassed += 1
                 if self.timePassed == self.numTrial {
                     timer.invalidate()
-                    self.sendButton.isEnabled = true
-                    self.performSegue(withIdentifier: K.resultSegue, sender: self)
+                    self.showResult()
                 }
             }
             
@@ -206,12 +232,21 @@ class ViewController: UIViewController {
                 if sequenceNo < self.numTrial {
                     self.postImageData(filename: filename, imgData: imgData, sequenceNo: sequenceNo + 1, async: false)
                 } else {
-                    self.sendButton.isEnabled = true
-                    self.performSegue(withIdentifier: K.resultSegue, sender: self)
-                    return
+                    self.showResult()
                 }
             }
         }
+    }
+    
+    func disableSendButtons() {
+        sendButton.isEnabled = false
+        socketSendButton.isEnabled = false
+    }
+    
+    func showResult() {
+        sendButton.isEnabled = true
+        socketSendButton.isEnabled = true
+        performSegue(withIdentifier: K.resultSegue, sender: self)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -250,16 +285,19 @@ extension ViewController: StompClientLibDelegate {
     func stompClient(client: StompClientLib!, didReceiveMessageWithJSONBody jsonBody: AnyObject?, akaStringBody stringBody: String?, withHeader header: [String : String]?, withDestination destination: String) {
 //        print("Destination : \(destination)")
 //        print("JSON Body : \(String(describing: jsonBody))")
-//        print("String Body : \(stringBody ?? "nil")")
+        print("String Body : \(stringBody ?? "nil")")
         
-    
-        let diff = Double(mach_absolute_time() - tick) * Double(timebaseInfo.numer) / Double(timebaseInfo.denom)
+        stompResponseTimestamps.append(mach_absolute_time())
+        let lastIdx = stompResponseTimestamps.count - 1
+        let diff = Double(mach_absolute_time() - stompRequestTimestamps[lastIdx]) * Double(timebaseInfo.numer) / Double(timebaseInfo.denom)
         print("\(diff / 1_000_000) milliseconds")
         
         let response = ImagePostResponseData(response: nil, timeInNano: diff)
         self.postResponses.append(response)
         
-        sendImageDataStomp(imgData: imgData, async: false)
+        if !self.async {
+            sendImageDataStomp(imgData: imgData, async: false)
+        }
     }
     
     func stompClientDidConnect(client: StompClientLib!) {
