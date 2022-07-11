@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		721681341833B30CB1945C38 /* Pods_Post_ImageTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B3EB737CAEDB9F657ABE0A98 /* Pods_Post_ImageTests.framework */; };
+		B133E6CD287ABEAA00F5C1D3 /* small_image.png in Resources */ = {isa = PBXBuildFile; fileRef = B133E6CC287ABEAA00F5C1D3 /* small_image.png */; };
 		B1A746DD286EDAA8000E3528 /* ImagePostData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A746DC286EDAA8000E3528 /* ImagePostData.swift */; };
 		B1A746DF286EFE24000E3528 /* secrets.plist in Resources */ = {isa = PBXBuildFile; fileRef = B1A746DE286EFE24000E3528 /* secrets.plist */; };
 		B1AF01992873E11E00A38D6A /* ResponseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1AF01982873E11E00A38D6A /* ResponseViewController.swift */; };
@@ -50,6 +51,7 @@
 		8FED85E79EF5D24B4F724C0E /* Pods-Post Image.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Post Image.release.xcconfig"; path = "Target Support Files/Pods-Post Image/Pods-Post Image.release.xcconfig"; sourceTree = "<group>"; };
 		9FC533A6CCBDF199FB8F2E65 /* Pods-Post Image-Post ImageUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Post Image-Post ImageUITests.release.xcconfig"; path = "Target Support Files/Pods-Post Image-Post ImageUITests/Pods-Post Image-Post ImageUITests.release.xcconfig"; sourceTree = "<group>"; };
 		B0E8AF2796FC219BFAA3F38B /* Pods-Post Image.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Post Image.debug.xcconfig"; path = "Target Support Files/Pods-Post Image/Pods-Post Image.debug.xcconfig"; sourceTree = "<group>"; };
+		B133E6CC287ABEAA00F5C1D3 /* small_image.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = small_image.png; sourceTree = "<group>"; };
 		B1A746DC286EDAA8000E3528 /* ImagePostData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePostData.swift; sourceTree = "<group>"; };
 		B1A746DE286EFE24000E3528 /* secrets.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = secrets.plist; sourceTree = "<group>"; };
 		B1AF01982873E11E00A38D6A /* ResponseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseViewController.swift; sourceTree = "<group>"; };
@@ -212,6 +214,7 @@
 		B1E8FC7A287523DE00344429 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				B133E6CC287ABEAA00F5C1D3 /* small_image.png */,
 				B1E8FC78287523D000344429 /* default_image.jpeg */,
 			);
 			path = Data;
@@ -328,6 +331,7 @@
 			files = (
 				B1A746DF286EFE24000E3528 /* secrets.plist in Resources */,
 				B1B9FF8E286EB7610078D435 /* LaunchScreen.storyboard in Resources */,
+				B133E6CD287ABEAA00F5C1D3 /* small_image.png in Resources */,
 				B1B9FF8B286EB7610078D435 /* Assets.xcassets in Resources */,
 				B1B9FF89286EB7600078D435 /* Main.storyboard in Resources */,
 				B1E8FC79287523D000344429 /* default_image.jpeg in Resources */,

@@ -47,7 +47,7 @@ class ViewController: UIViewController {
         print("url constructed: \(url!)")
         
         socketClient = StompClientLib()
-        socketClient.openSocketWithURLRequest(request: NSURLRequest(url: url) , delegate: self)
+        socketClient.openSocketWithURLRequest(request: NSURLRequest(url: url) , delegate: self, connectionHeaders: ["Authorization" : "Bearer xyz)", "heart-beat": "0,10000"])
     }
     
     func loadSecrets() {
@@ -66,7 +66,7 @@ class ViewController: UIViewController {
         }
     }
     func loadDefaultImage() {
-        if let bundlePath = Bundle.main.path(forResource: K.fileNames.bundleImageName, ofType: "jpeg"),
+        if let bundlePath = Bundle.main.path(forResource: K.fileNames.bundleImageName, ofType: K.fileNames.bundleImageExtension),
             let image = UIImage(contentsOfFile: bundlePath) {
             imageView.image = image
         } else {
@@ -106,13 +106,21 @@ class ViewController: UIViewController {
         }
     }
     @IBAction func handleSendSocketButton(_ sender: UIButton) {
-        imageEmitTest(imgData: Data())
+        if let imgData = imageView.image?.jpegData(compressionQuality: compressionQuality) {
+            imageEmitTest(imgData: imgData)
+        } else {
+            self.view.makeToast("img unable to convert into JPEG data!")
+        }
         
     }
     
     func imageEmitTest(imgData: Data) {
-        print("sending hello")
-        socketClient.sendMessage(message: "hello!", toDestination: "/pub/upload", withHeaders: nil, withReceipt: nil)
+        print("sending hello & image")
+        socketClient.sendMessage(message: String(imgData.base64EncodedString()), toDestination: "/pub/upload", withHeaders: nil, withReceipt: nil)
+//        socketClient.sendMessage(message: Data("hello".utf8).base64EncodedString(), toDestination: "/pub/upload", withHeaders: nil, withReceipt: nil)
+//        print(String(imgData.base64EncodedString().count))
+//        let data = NSDictionary(dictionary: ["image": String(imgData.base64EncodedString().prefix(10000))])
+//        socketClient.sendJSONForDict(dict: data, toDestination: "/pub/upload")
     }
     
     
@@ -224,7 +232,7 @@ extension ViewController: StompClientLibDelegate {
         print("Socket is connected")
         
         // Stomp subscribe will be here!
-        socketClient.subscribe(destination: "/sub/img")
+        socketClient.subscribe(destination: "/sub/upload")
     }
     
     func stompClientDidDisconnect(client: StompClientLib!) {

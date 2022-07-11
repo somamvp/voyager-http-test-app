@@ -41,7 +41,6 @@
                                 </buttonConfiguration>
                                 <connections>
                                     <action selector="handleChangeButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="bn4-Ku-77b"/>
-                                    <action selector="handleSendButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="3dk-1a-VSE"/>
                                 </connections>
                             </button>
                             <slider opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="1" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="dLP-vW-vDV">
