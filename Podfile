@@ -11,6 +11,7 @@ target 'Post Image' do
   # pod 'Socket.IO-Client-Swift', '~> 15.2.0'
   # pod 'Starscream', '~> 4.0.0'
   pod "StompClientLib"
+  pod 'gRPC-Swift', '~> 1.8.0'
 
 
   target 'Post ImageTests' do
