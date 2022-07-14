@@ -8,6 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		721681341833B30CB1945C38 /* Pods_Post_ImageTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B3EB737CAEDB9F657ABE0A98 /* Pods_Post_ImageTests.framework */; };
+		B133E6CD287ABEAA00F5C1D3 /* small_image.png in Resources */ = {isa = PBXBuildFile; fileRef = B133E6CC287ABEAA00F5C1D3 /* small_image.png */; };
+		B133E6DC287C4CAF00F5C1D3 /* helloworld.proto in Sources */ = {isa = PBXBuildFile; fileRef = B133E6D9287C4CAF00F5C1D3 /* helloworld.proto */; };
+		B133E6DD287C4CAF00F5C1D3 /* helloworld.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B133E6DA287C4CAF00F5C1D3 /* helloworld.grpc.swift */; };
+		B133E6DE287C4CAF00F5C1D3 /* helloworld.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B133E6DB287C4CAF00F5C1D3 /* helloworld.pb.swift */; };
+		B133E6E1287C4CC100F5C1D3 /* HelloWorld.swift in Sources */ = {isa = PBXBuildFile; fileRef = B133E6E0287C4CC100F5C1D3 /* HelloWorld.swift */; };
 		B1A746DD286EDAA8000E3528 /* ImagePostData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A746DC286EDAA8000E3528 /* ImagePostData.swift */; };
 		B1A746DF286EFE24000E3528 /* secrets.plist in Resources */ = {isa = PBXBuildFile; fileRef = B1A746DE286EFE24000E3528 /* secrets.plist */; };
 		B1AF01992873E11E00A38D6A /* ResponseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1AF01982873E11E00A38D6A /* ResponseViewController.swift */; };
@@ -50,6 +55,11 @@
 		8FED85E79EF5D24B4F724C0E /* Pods-Post Image.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Post Image.release.xcconfig"; path = "Target Support Files/Pods-Post Image/Pods-Post Image.release.xcconfig"; sourceTree = "<group>"; };
 		9FC533A6CCBDF199FB8F2E65 /* Pods-Post Image-Post ImageUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Post Image-Post ImageUITests.release.xcconfig"; path = "Target Support Files/Pods-Post Image-Post ImageUITests/Pods-Post Image-Post ImageUITests.release.xcconfig"; sourceTree = "<group>"; };
 		B0E8AF2796FC219BFAA3F38B /* Pods-Post Image.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Post Image.debug.xcconfig"; path = "Target Support Files/Pods-Post Image/Pods-Post Image.debug.xcconfig"; sourceTree = "<group>"; };
+		B133E6CC287ABEAA00F5C1D3 /* small_image.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = small_image.png; sourceTree = "<group>"; };
+		B133E6D9287C4CAF00F5C1D3 /* helloworld.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = helloworld.proto; sourceTree = "<group>"; };
+		B133E6DA287C4CAF00F5C1D3 /* helloworld.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = helloworld.grpc.swift; sourceTree = "<group>"; };
+		B133E6DB287C4CAF00F5C1D3 /* helloworld.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = helloworld.pb.swift; sourceTree = "<group>"; };
+		B133E6E0287C4CC100F5C1D3 /* HelloWorld.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HelloWorld.swift; sourceTree = "<group>"; };
 		B1A746DC286EDAA8000E3528 /* ImagePostData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePostData.swift; sourceTree = "<group>"; };
 		B1A746DE286EFE24000E3528 /* secrets.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = secrets.plist; sourceTree = "<group>"; };
 		B1AF01982873E11E00A38D6A /* ResponseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseViewController.swift; sourceTree = "<group>"; };
@@ -126,6 +136,33 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		B133E6D1287C4A2000F5C1D3 /* Communications */ = {
+			isa = PBXGroup;
+			children = (
+				B133E6DF287C4CB400F5C1D3 /* Client */,
+				B133E6D8287C4CA200F5C1D3 /* Model */,
+			);
+			path = Communications;
+			sourceTree = "<group>";
+		};
+		B133E6D8287C4CA200F5C1D3 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				B133E6DA287C4CAF00F5C1D3 /* helloworld.grpc.swift */,
+				B133E6DB287C4CAF00F5C1D3 /* helloworld.pb.swift */,
+				B133E6D9287C4CAF00F5C1D3 /* helloworld.proto */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		B133E6DF287C4CB400F5C1D3 /* Client */ = {
+			isa = PBXGroup;
+			children = (
+				B133E6E0287C4CC100F5C1D3 /* HelloWorld.swift */,
+			);
+			path = Client;
+			sourceTree = "<group>";
+		};
 		B1AF01952873E08D00A38D6A /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -137,6 +174,7 @@
 		B1AF01962873E0AD00A38D6A /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				B133E6D1287C4A2000F5C1D3 /* Communications */,
 				B1B9FF85286EB7600078D435 /* ViewController.swift */,
 				B1AF01982873E11E00A38D6A /* ResponseViewController.swift */,
 			);
@@ -212,6 +250,7 @@
 		B1E8FC7A287523DE00344429 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				B133E6CC287ABEAA00F5C1D3 /* small_image.png */,
 				B1E8FC78287523D000344429 /* default_image.jpeg */,
 			);
 			path = Data;
@@ -235,6 +274,8 @@
 			dependencies = (
 			);
 			name = "Post Image";
+			packageProductDependencies = (
+			);
 			productName = "Post Image";
 			productReference = B1B9FF7E286EB7600078D435 /* Post Image.app */;
 			productType = "com.apple.product-type.application";
@@ -310,6 +351,8 @@
 				Base,
 			);
 			mainGroup = B1B9FF75286EB7600078D435;
+			packageReferences = (
+			);
 			productRefGroup = B1B9FF7F286EB7600078D435 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -328,6 +371,7 @@
 			files = (
 				B1A746DF286EFE24000E3528 /* secrets.plist in Resources */,
 				B1B9FF8E286EB7610078D435 /* LaunchScreen.storyboard in Resources */,
+				B133E6CD287ABEAA00F5C1D3 /* small_image.png in Resources */,
 				B1B9FF8B286EB7610078D435 /* Assets.xcassets in Resources */,
 				B1B9FF89286EB7600078D435 /* Main.storyboard in Resources */,
 				B1E8FC79287523D000344429 /* default_image.jpeg in Resources */,
@@ -462,8 +506,12 @@
 				B1AF019D2874135700A38D6A /* ImagePostResponseData.swift in Sources */,
 				B1A746DD286EDAA8000E3528 /* ImagePostData.swift in Sources */,
 				B1B9FF82286EB7600078D435 /* AppDelegate.swift in Sources */,
+				B133E6DE287C4CAF00F5C1D3 /* helloworld.pb.swift in Sources */,
 				B1AF019B2873E20800A38D6A /* K.swift in Sources */,
 				B1B9FF84286EB7600078D435 /* SceneDelegate.swift in Sources */,
+				B133E6E1287C4CC100F5C1D3 /* HelloWorld.swift in Sources */,
+				B133E6DD287C4CAF00F5C1D3 /* helloworld.grpc.swift in Sources */,
+				B133E6DC287C4CAF00F5C1D3 /* helloworld.proto in Sources */,
 				B1AF01992873E11E00A38D6A /* ResponseViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -627,6 +675,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -651,7 +700,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -683,12 +732,13 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.woosukji.Post-Image";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

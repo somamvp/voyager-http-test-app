@@ -12,6 +12,8 @@ struct K {
     
     struct fileNames {
         static let bundleImageName = "default_image"
+        static let bundleImageExtension = "jpeg"
+        
         static let postImageName = "test.jpg"
     }
 }

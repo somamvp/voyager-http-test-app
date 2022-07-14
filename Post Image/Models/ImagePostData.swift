@@ -11,6 +11,11 @@ struct ImagePostResponseRawData: Decodable {
     let sequenceNo: Int
 }
 
-struct ImagePostRequestData {
+class ImagePostRequestData: Codable {
     
+    init(image: Data) {
+        self.image = image
+    }
+    
+    var image: Data
 }
